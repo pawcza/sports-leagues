@@ -1,6 +1,14 @@
 # Sports Leagues
 
+[![CI](https://github.com/pawcza/sports-leagues/actions/workflows/ci.yml/badge.svg)](https://github.com/pawcza/sports-leagues/actions/workflows/ci.yml)
+
+**Live: https://pawcza.github.io/sports-leagues/**
+
 A single-page app that lists sports leagues from [TheSportsDB](https://www.thesportsdb.com/free_sports_api), lets you search and filter them, and shows season badges for the selected league.
+
+| Desktop | Phone |
+|---|---|
+| ![Desktop](docs/desktop.png) | <img src="docs/mobile.png" alt="Phone" width="280"> |
 
 ```bash
 pnpm install     # Node ^20.19 or >=22.12 (see .nvmrc); npm/yarn also work, pnpm is what the lockfile targets
@@ -59,4 +67,3 @@ All responses are cached with TanStack Query and persisted to `localStorage` (24
 ## Not done
 
 - Highlighting the matched text in search results.
-- Deployment config and CI.
