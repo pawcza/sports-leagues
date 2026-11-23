@@ -141,6 +141,20 @@ describe('App', () => {
     expect(chips().map((b) => b.textContent)).toEqual(['2005-2006', '2004-2005'])
   })
 
+  it('demo toggle adds leagues from other sports, and turns off again', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+    await screen.findByRole('button', { name: /english premier league/i })
+    expect(screen.queryByLabelText('Filter by sport')).not.toBeInTheDocument()
+    const toggle = screen.getByRole('switch', { name: /demo data/i })
+    await user.click(toggle)
+    expect(await screen.findByRole('button', { name: /^nba$/i })).toBeInTheDocument()
+    expect(screen.getByLabelText('Filter by sport')).toBeInTheDocument()
+    expect(window.location.search).toContain('mock=1')
+    await user.click(toggle)
+    await waitFor(() => expect(screen.queryByRole('button', { name: /^nba$/i })).not.toBeInTheDocument())
+  })
+
   it('handles leagues without badges', async () => {
     const user = userEvent.setup()
     render(<App />)

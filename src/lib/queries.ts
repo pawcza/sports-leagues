@@ -1,6 +1,5 @@
 import { QueryClient, queryOptions, useQuery } from '@tanstack/react-query'
 import { fetchLeagues, fetchSeasonBadges } from './api'
-import { MOCK_ENABLED } from './mock'
 import { persistQueryCache } from './persist'
 
 const HOUR = 60 * 60 * 1000
@@ -11,11 +10,12 @@ export const queryClient = new QueryClient({
 
 persistQueryCache(queryClient)
 
-export const leaguesQuery = queryOptions({
-  queryKey: ['leagues', MOCK_ENABLED],
-  queryFn: ({ signal }) => fetchLeagues(signal),
-  staleTime: 4 * HOUR, // mirrors the API's own cache-control: max-age=14400
-})
+export const leaguesQuery = (demo: boolean) =>
+  queryOptions({
+    queryKey: ['leagues', demo],
+    queryFn: ({ signal }) => fetchLeagues(demo, signal),
+    staleTime: 4 * HOUR, // mirrors the API's own cache-control: max-age=14400
+  })
 
 // Historic badges never change, so a league is fetched at most once per session.
 export const badgesQuery = (id: string) =>
@@ -26,5 +26,5 @@ export const badgesQuery = (id: string) =>
     gcTime: Infinity,
   })
 
-export const useLeagues = () => useQuery(leaguesQuery)
+export const useLeagues = (demo: boolean) => useQuery(leaguesQuery(demo))
 export const useBadges = (id: string, enabled = true) => useQuery({ ...badgesQuery(id), enabled })

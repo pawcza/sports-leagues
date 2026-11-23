@@ -33,9 +33,9 @@ const iconOnly = 'max-sm:w-11 max-sm:justify-center max-sm:px-0 max-sm:[&>svg:la
 function SportLabel({ sport, count, compact }: { sport: string; count: number; compact?: boolean }) {
   return (
     <>
-      {sport === ALL_SPORTS ? <LayoutGrid className="size-4 text-primary" /> : <SportIcon sport={sport} className="size-5 text-primary" />}
+      {sport === ALL_SPORTS ? <LayoutGrid className="size-5 shrink-0 text-primary" /> : <SportIcon sport={sport} className="size-5 shrink-0 text-primary" />}
       <span className={cn(compact && 'max-sm:hidden')}>{sport === ALL_SPORTS ? 'All sports' : sport}</span>
-      <span className={cn('ml-auto pl-3 text-xs text-muted-foreground tabular-nums', compact && 'max-sm:hidden')}>{count}</span>
+      <span className={cn('ml-auto min-w-[2ch] pl-3 text-right text-xs text-muted-foreground tabular-nums', compact && 'max-sm:hidden')}>{count}</span>
     </>
   )
 }
@@ -136,7 +136,7 @@ export function Filters({ query, onQueryChange, sport, sports, total, onSportCha
               const { Icon, short } = SORTS.find((s) => s.key === v) ?? SORTS[0]
               return (
                 <>
-                  <Icon className="size-4 text-primary" />
+                  <Icon className="size-5 shrink-0 text-primary" />
                   <span className="max-sm:hidden">{short}</span>
                 </>
               )
@@ -146,7 +146,7 @@ export function Filters({ query, onQueryChange, sport, sports, total, onSportCha
         <SelectContent align="end" className="min-w-56">
           {SORTS.map(({ key, label, Icon }) => (
             <SelectItem key={key} value={key}>
-              <Icon className="text-primary" /> {label}
+              <Icon className="size-5 shrink-0 text-primary" /> {label}
             </SelectItem>
           ))}
         </SelectContent>

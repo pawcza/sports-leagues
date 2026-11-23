@@ -40,6 +40,11 @@ test('groups leagues by sport and offers the sport filter', async ({ page }, inf
   await expect(page.getByRole('heading', { level: 2, name: /Soccer|Basketball|Ice Hockey|Motorsport/ })).toHaveCount(4)
   await expect(page.getByLabel('Filter by sport')).toBeVisible()
   await page.screenshot({ path: info.outputPath('01-home.png') })
+  await page.getByLabel('Filter by sport').click()
+  await expect(page.getByRole('option', { name: /Basketball/ })).toBeVisible()
+  await page.waitForTimeout(400)
+  await page.screenshot({ path: info.outputPath('05-sport-dropdown.png') })
+  await page.keyboard.press('Escape')
 })
 
 test('grid is 1 column on phones and 3 on wide screens', async ({ page }, info) => {

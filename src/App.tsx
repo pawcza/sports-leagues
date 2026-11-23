@@ -1,27 +1,30 @@
 import { QueryClientProvider } from '@tanstack/react-query'
-import { AlertCircle, RotateCw, SearchX, X } from 'lucide-react'
+import { AlertCircle, RotateCw, SearchX } from 'lucide-react'
 import { LazyMotion, m, MotionConfig } from 'motion/react'
-import { useDeferredValue, useMemo, useState } from 'react'
-import { BadgePanel } from '@/components/BadgePanel'
+import { lazy, Suspense, useDeferredValue, useMemo, useState } from 'react'
+import { DemoToggle } from '@/components/DemoToggle'
 import { Filters } from '@/components/Filters'
 import { SportSection } from '@/components/SportSection'
 import { Button } from '@/components/ui/button'
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { useStuck } from '@/hooks/useStuck'
 import { useUrlState } from '@/hooks/useUrlState'
 import { ALL_SPORTS, filterLeagues, groupBySport, sortLeagues, sportOptions, type SortKey } from '@/lib/filter'
-import { MOCK_ENABLED } from '@/lib/mock'
 import { ease, rise } from '@/lib/motion'
 import { queryClient, useLeagues } from '@/lib/queries'
 import { cn } from '@/lib/utils'
 
-const URL_KEYS = ['q', 'sport', 'sort', 'league'] as const
+// Not needed for the first paint: loaded as separate chunks.
+const BadgePanel = lazy(() => import('@/components/BadgePanel').then((m) => ({ default: m.BadgePanel })))
+const BadgeSheet = lazy(() => import('@/components/BadgeSheet').then((m) => ({ default: m.BadgeSheet })))
+
+const URL_KEYS = ['q', 'sport', 'sort', 'league', 'mock'] as const
 
 function Leagues() {
-  const { data: leagues, isPending, isError, refetch, isFetching } = useLeagues()
   const [url, setUrl] = useUrlState(URL_KEYS)
+  const demo = url.mock === '1'
+  const { data: leagues, isPending, isError, refetch, isFetching } = useLeagues(demo)
   const [sentinel, stuck] = useStuck()
   const isDesktop = useMediaQuery('(min-width: 1024px)')
 
@@ -63,16 +66,7 @@ function Leagues() {
             </span>
             Live data · TheSportsDB
           </div>
-          {MOCK_ENABLED && (
-            <a
-              href={window.location.pathname}
-              title="Leave demo mode"
-              className="inline-flex w-fit items-center gap-1.5 rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1 text-xs font-medium text-amber-300 outline-none hover:bg-amber-400/20 focus-visible:ring-3 focus-visible:ring-amber-400/40"
-            >
-              Demo data · extra sports added
-              <X className="size-3" aria-hidden />
-            </a>
-          )}
+          <DemoToggle on={demo} onChange={(on) => setUrl({ mock: on ? '1' : '' })} />
         </div>
         <h1 className="text-3xl font-bold tracking-tight sm:text-6xl">
           Find your{' '}
@@ -170,7 +164,9 @@ function Leagues() {
             className="sticky top-24 rounded-3xl border border-white/8 bg-card/60 p-5 shadow-2xl shadow-black/30 backdrop-blur"
           >
             {selected ? (
-              <BadgePanel key={selected.id} league={selected} />
+              <Suspense fallback={<Skeleton className="h-96 rounded-2xl" />}>
+                <BadgePanel key={selected.id} league={selected} />
+              </Suspense>
             ) : (
               <div className="grid min-h-64 place-items-center text-center text-sm text-muted-foreground">
                 Select a league to see its badge.
@@ -181,15 +177,9 @@ function Leagues() {
       </div>
 
       {!isDesktop && (
-        <Sheet open={!!selected} onOpenChange={(open) => !open && setUrl({ league: '' })}>
-          <SheetContent side="bottom" className="max-h-[90svh] overflow-y-auto p-5">
-            <SheetHeader className="sr-only">
-              <SheetTitle>{selected?.name}</SheetTitle>
-              <SheetDescription>Season badge</SheetDescription>
-            </SheetHeader>
-            {selected && <BadgePanel key={selected.id} league={selected} />}
-          </SheetContent>
-        </Sheet>
+        <Suspense fallback={null}>
+          <BadgeSheet league={selected} onClose={() => setUrl({ league: '' })} />
+        </Suspense>
       )}
 
       <footer className="mt-auto pt-8 text-xs text-muted-foreground">
@@ -198,16 +188,6 @@ function Leagues() {
           TheSportsDB
         </a>
         .
-        {!MOCK_ENABLED && (
-          <>
-            {' '}
-            The free API only returns Soccer:{' '}
-            <a className="underline underline-offset-2 hover:text-foreground" href="?mock">
-              try the demo with more sports
-            </a>
-            .
-          </>
-        )}
       </footer>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import { isMockId, MOCK_ENABLED, MOCK_LEAGUES } from './mock'
+import { isMockId, MOCK_LEAGUES } from './mock'
 
 /** The free test key `123` is the default. A premium key (VITE_SPORTSDB_KEY) lifts the free tier's caps. */
 export const API_KEY: string = import.meta.env.VITE_SPORTSDB_KEY || '123'
@@ -33,9 +33,9 @@ async function getJson<T>(path: string, signal?: AbortSignal): Promise<T> {
   return res.json() as Promise<T>
 }
 
-export async function fetchLeagues(signal?: AbortSignal): Promise<League[]> {
+export async function fetchLeagues(demo: boolean, signal?: AbortSignal): Promise<League[]> {
   const data = await getJson<{ leagues: RawLeague[] | null }>('all_leagues.php', signal)
-  const raw = MOCK_ENABLED ? [...(data.leagues ?? []), ...MOCK_LEAGUES] : (data.leagues ?? [])
+  const raw = demo ? [...(data.leagues ?? []), ...MOCK_LEAGUES] : (data.leagues ?? [])
   return raw.map((l) => ({
     id: l.idLeague,
     name: l.strLeague,
