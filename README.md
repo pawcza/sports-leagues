@@ -1,0 +1,55 @@
+# Sports Leagues
+
+A single-page app that lists sports leagues from [TheSportsDB](https://www.thesportsdb.com/free_sports_api), lets you search and filter them, and shows season badges for the selected league.
+
+```bash
+pnpm install     # Node ^20.19 or >=22.12 (see .nvmrc); npm/yarn also work, pnpm is what the lockfile targets
+pnpm dev         # http://localhost:5173
+pnpm test        # unit + component tests (API mocked with MSW)
+pnpm e2e         # Playwright smoke tests at phone and desktop widths (API mocked; first run: pnpm exec playwright install chromium)
+pnpm build       # type-check + production build
+```
+
+## About the free API key
+
+The brief's `123` test key is capped, and that shapes what you can see:
+
+| Endpoint | What the free key returns |
+|---|---|
+| `all_leagues.php` | **10 leagues, all Soccer**: so the sport dropdown (which the brief says to show only when several sports appear) is correctly hidden |
+| `search_all_seasons.php?badge=1&id=…` | only the **5 oldest seasons** of a league (e.g. EPL: 1992-93 → 1996-97), so "latest badge" below means the latest one the API returns |
+| any | rate limited per IP; over the limit the API answers 429 without CORS headers, which browsers report as a CORS error |
+
+Two ways to see the full UI anyway:
+
+- **Demo mode:** open `/?mock` (there is a link in the footer). It adds leagues from four more sports (a visible *Demo data* badge is shown; leave with its ✕). Demo leagues have no real badges and cost no API requests.
+- **Premium key:** copy `.env.example` to `.env` and set `VITE_SPORTSDB_KEY`. All leagues, sports and seasons then come from the real API (no code change). Leagues with more than 12 seasons get a season filter.
+
+## What it does
+
+- **List:** leagues (`strLeague`) grouped into one section per sport (`strSport`, shown once in the section header with its icon and league count instead of on every card), with a search box, a sport dropdown (icons + counts), a Default / A–Z / Z–A sort and a Reset button. All of it lives in the URL (`?q=&sport=&sort=&league=`), so a view can be reloaded or shared.
+- **Badge:** clicking a league shows its season badge (latest season by default), a season picker, and a full-screen view that morphs out of the thumbnail (native View Transitions API on a native `<dialog>`; plain open/close where unsupported).
+- **Responsive:** 1 / 2 / 3 grid columns, a sticky toolbar, category headers that dock on phones and tablets, a side panel on desktop and a bottom sheet on mobile.
+- **States and a11y:** skeletons, error states with retry, empty states, real buttons (`aria-pressed`), a live result count, `prefers-reduced-motion` respected.
+
+## When requests happen (and caching)
+
+All responses are cached with TanStack Query and persisted to `localStorage` (24 h, per API key), so a reload costs zero requests while the cache is fresh.
+
+- Leagues: one request on first load (4 h `staleTime`, mirroring the API's own `cache-control`).
+- Badges, **one request per league, at most once**: fetched when that league's card scrolls near the viewport (to draw its thumbnail), when you hover or focus a card for 250 ms (prefetch), or when you click it. Clicking therefore usually *hits the cache* instead of the network; the Season Badge API is still called with the league id, just earlier.
+- Concurrent requests for the same key are de-duplicated.
+
+## Design decisions
+
+- **Stack:** React 19, Vite, strict TypeScript, Tailwind 4, shadcn/ui (Base UI), TanStack Query, motion, Phosphor icons for sports and lucide for UI chrome. Tests: Vitest, Testing Library, MSW, Playwright.
+- **Structure:** `lib/api.ts` is the only code that touches `fetch`; `lib/queries.ts` owns caching; `lib/filter.ts` holds pure filter / sort / group functions (unit tested); components are `Filters`, `SportSection`, `LeagueCard`, `LeagueThumb`, `BadgePanel`, `BadgeViewer`, `SportIcon`.
+- **Null-safe API handling:** `strBadge: null` seasons are dropped, `seasons: null` (unknown league) shows an empty state.
+- **Selection follows the filters:** a selected league that the current search or sport filter hides is cleared rather than left open.
+- **Motion:** entrance stagger, layout animation when filters reshuffle the list, blur-in badges, spring season pill, view-transition badge view. Motion features are lazy-loaded.
+
+## Not done
+
+- Pagination or virtualisation (not needed for 10 leagues, but a premium key returns the whole catalogue).
+- Highlighting the matched text in search results.
+- Deployment config and CI.
