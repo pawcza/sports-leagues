@@ -192,3 +192,17 @@
 ::view-transition-group(root) {
     animation-duration: 0.35s;
 }
+
+/* The "stage" behind a badge: a soft spotlight and a faint grid. Shared by the panel and the full view. */
+.badge-stage {
+    background:
+        radial-gradient(circle at 50% 40%, oklch(0.84 0.2 150 / 0.2), transparent 65%),
+        linear-gradient(to bottom, oklch(0.22 0.02 255), oklch(0.17 0.014 255));
+}
+.badge-stage-grid {
+    background-image:
+        linear-gradient(oklch(1 0 0 / 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, oklch(1 0 0 / 0.04) 1px, transparent 1px);
+    background-size: 2rem 2rem;
+    mask-image: radial-gradient(circle, black 30%, transparent 75%);
+}

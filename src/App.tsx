@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { useStuck } from '@/hooks/useStuck'
 import { filterLeagues, groupBySport, sortLeagues, sportOptions } from '@/lib/filter'
+import { LEAGUE_GRID, TOOLBAR_HEIGHT } from '@/lib/layout'
 import { ease, rise } from '@/lib/motion'
 import { queryClient, useLeagues } from '@/lib/queries'
 import { cn } from '@/lib/utils'
@@ -77,8 +78,9 @@ function Leagues() {
           'sticky top-0 z-30 border-y border-transparent transition-colors duration-300',
           stuck && 'border-white/8 bg-background/75 backdrop-blur-xl',
         )}
+        style={{ height: TOOLBAR_HEIGHT }}
       >
-        <div className="mx-auto w-full max-w-6xl px-4 py-3 sm:px-6 sm:py-2.5">
+        <div className="mx-auto flex h-full w-full max-w-6xl items-center px-4 sm:px-6">
         <Filters sports={sports} total={leagues?.length ?? 0} />
         </div>
       </m.div>
@@ -87,7 +89,7 @@ function Leagues() {
       <div className="grid items-start gap-8 lg:grid-cols-[1fr_22rem]">
         <section aria-label="Leagues" className="min-w-0">
           {isPending && (
-            <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 sm:gap-3 xl:grid-cols-3" aria-busy="true" aria-label="Loading leagues">
+            <div className={LEAGUE_GRID} aria-busy="true" aria-label="Loading leagues">
               {Array.from({ length: 8 }, (_, i) => (
                 <Skeleton key={i} className="h-[3.75rem] rounded-2xl" />
               ))}

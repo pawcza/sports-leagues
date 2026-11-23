@@ -1,27 +1,22 @@
-import { AlertCircle, ImageOff, Maximize2, RotateCw, Search } from 'lucide-react'
+import { AlertCircle, ImageOff, Maximize2, RotateCw } from 'lucide-react'
 import { AnimatePresence, m } from 'motion/react'
 import { useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { League } from '@/lib/api'
 import { ease } from '@/lib/motion'
 import { useBadges } from '@/lib/queries'
-import { cn } from '@/lib/utils'
 import { runViewTransition } from '@/lib/viewTransition'
 import { BadgeViewer } from './BadgeViewer'
+import { SeasonPicker } from './SeasonPicker'
 import { SportIcon } from './SportIcon'
-
-/** Leagues with more seasons than this get a season filter (the free API key returns only 5). */
-const SEASON_SEARCH_MIN = 12
 
 export function BadgePanel({ league }: { league: League }) {
   const { data: seasons, isPending, isError, refetch, isFetching } = useBadges(league.id)
   const [picked, setPicked] = useState<string | null>(null)
-  const [seasonQuery, setSeasonQuery] = useState('')
   const active = seasons?.find((s) => s.season === picked) ?? seasons?.at(-1)
-  const shown = [...(seasons ?? [])].reverse().filter((s) => s.season.includes(seasonQuery.trim()))
+  const alt = active ? `${league.name} badge, season ${active.season}` : ''
 
   const [viewerOpen, setViewerOpen] = useState(false)
   const dialogRef = useRef<HTMLDialogElement>(null)
@@ -65,10 +60,10 @@ export function BadgePanel({ league }: { league: League }) {
         </div>
       </div>
 
-      <div className="relative isolate grid aspect-square place-items-center overflow-hidden rounded-3xl border border-white/8 bg-[radial-gradient(circle_at_50%_40%,oklch(0.84_0.2_150/0.2),transparent_65%),linear-gradient(to_bottom,oklch(0.22_0.02_255),oklch(0.17_0.014_255))]">
+      <div className="relative isolate grid aspect-square place-items-center overflow-hidden rounded-3xl border border-white/8 badge-stage">
         <div
           aria-hidden
-          className="absolute inset-0 -z-10 bg-[linear-gradient(oklch(1_0_0/0.04)_1px,transparent_1px),linear-gradient(90deg,oklch(1_0_0/0.04)_1px,transparent_1px)] bg-[size:2rem_2rem] [mask-image:radial-gradient(circle,black_30%,transparent_75%)]"
+          className="absolute inset-0 -z-10 badge-stage-grid"
         />
 
         {isPending && <Skeleton className="size-40 rounded-full" />}
@@ -95,7 +90,7 @@ export function BadgePanel({ league }: { league: League }) {
             <BadgeImage
               key={active.badge}
               src={active.badge}
-              alt={`${league.name} badge, season ${active.season}`}
+              alt={alt}
               onOpen={openViewer}
             />
           )}
@@ -115,51 +110,9 @@ export function BadgePanel({ league }: { league: League }) {
       </div>
 
       {seasons && seasons.length > 1 && active && (
-        <div>
-          <p className="mb-2.5 text-sm font-medium text-muted-foreground">
-            Seasons <span className="tabular-nums">({seasons.length})</span>
-          </p>
-          {seasons.length > SEASON_SEARCH_MIN && (
-            <div className="relative mb-3">
-              <Search className="pointer-events-none absolute top-1/2 left-3 z-10 size-4 -translate-y-1/2 text-foreground/70" aria-hidden />
-              <Input
-                type="search"
-                value={seasonQuery}
-                onChange={(e) => setSeasonQuery(e.target.value)}
-                placeholder="Filter by year…"
-                aria-label="Filter seasons by year"
-                className="h-10 rounded-xl border-white/10 bg-card/70 pl-9 [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-cancel-button]:appearance-none"
-              />
-            </div>
-          )}
-          <div className="flex flex-wrap gap-1.5" role="group" aria-label="Season">
-            {shown.map(({ season }) => {
-              const on = season === active.season
-              return (
-                <button
-                  key={season}
-                  type="button"
-                  aria-pressed={on}
-                  onClick={() => setPicked(season)}
-                  className={cn(
-                    'relative rounded-full border border-white/10 px-3 py-1 text-xs tabular-nums transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/60',
-                    on ? 'border-transparent text-primary-foreground' : 'hover:bg-white/8',
-                  )}
-                >
-                  {on && (
-                    <m.span
-                      layoutId="season-pill"
-                      className="absolute inset-0 rounded-full bg-primary shadow-[0_0_20px_-2px] shadow-primary/60"
-                      transition={{ type: 'spring', stiffness: 400, damping: 32 }}
-                    />
-                  )}
-                  <span className="relative">{season}</span>
-                </button>
-              )
-            })}
-          </div>
-        </div>
+        <SeasonPicker seasons={seasons.map((x) => x.season)} active={active.season} onPick={setPicked} />
       )}
+
       {active && (
         <BadgeViewer
           dialogRef={dialogRef}
@@ -168,7 +121,7 @@ export function BadgePanel({ league }: { league: League }) {
           league={league}
           season={active.season}
           src={active.badge}
-          alt={`${league.name} badge, season ${active.season}`}
+          alt={alt}
         />
       )}
     </m.div>

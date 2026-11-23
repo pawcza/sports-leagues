@@ -10,7 +10,7 @@ export const queryClient = new QueryClient({
 
 persistQueryCache(queryClient)
 
-export const leaguesQuery = (demo: boolean) =>
+const leaguesQuery = (demo: boolean) =>
   queryOptions({
     queryKey: ['leagues', demo],
     queryFn: ({ signal }) => fetchLeagues(demo, signal),

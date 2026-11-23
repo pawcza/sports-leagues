@@ -58,6 +58,5 @@ All responses are cached with TanStack Query and persisted to `localStorage` (24
 
 ## Not done
 
-- Pagination or virtualisation (not needed for 10 leagues, but a premium key returns the whole catalogue).
 - Highlighting the matched text in search results.
 - Deployment config and CI.

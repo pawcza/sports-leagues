@@ -28,4 +28,4 @@ How I used them: I set the product and UX direction, reviewed the running app on
 
 ## Trade-offs
 
-State is not in the URL (views are not shareable), and there is no pagination, which a premium key's full catalogue would eventually need. See the README for how to run everything and for the API limits in detail.
+State is not in the URL, so views are not shareable. See the README for how to run everything and for the API limits in detail.

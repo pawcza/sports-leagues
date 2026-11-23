@@ -28,10 +28,10 @@ export function BadgeViewer({ dialogRef, open, onClose, league, season, src, alt
       className="m-auto w-[min(92vw,42rem)] max-w-none overflow-visible bg-transparent p-0 text-foreground backdrop:bg-black/70 backdrop:backdrop-blur-md open:flex"
     >
       {open && (
-        <div className="relative isolate flex w-full flex-col items-center gap-6 overflow-hidden rounded-3xl border border-white/10 bg-[radial-gradient(circle_at_50%_35%,oklch(0.84_0.2_150/0.25),transparent_60%),linear-gradient(to_bottom,oklch(0.22_0.02_255),oklch(0.16_0.014_255))] px-6 pt-14 pb-10 shadow-2xl shadow-black/60 sm:px-12">
+        <div className="relative isolate flex w-full flex-col items-center gap-6 overflow-hidden rounded-3xl border border-white/10 badge-stage px-6 pt-14 pb-10 shadow-2xl shadow-black/60 sm:px-12">
           <div
             aria-hidden
-            className="absolute inset-0 -z-10 bg-[linear-gradient(oklch(1_0_0/0.04)_1px,transparent_1px),linear-gradient(90deg,oklch(1_0_0/0.04)_1px,transparent_1px)] bg-[size:2.5rem_2.5rem] [mask-image:radial-gradient(circle,black_25%,transparent_75%)]"
+            className="absolute inset-0 -z-10 badge-stage-grid"
           />
           <Button variant="ghost" size="icon" className="absolute top-3 right-3" onClick={onClose} aria-label="Close">
             <X />
