@@ -52,7 +52,7 @@ All responses are cached with TanStack Query and persisted to `localStorage` (24
 ## Design decisions
 
 - **Stack:** React 19, Vite, strict TypeScript, Tailwind 4, shadcn/ui (Base UI), TanStack Query, Zustand, motion, Phosphor icons for sports and lucide for UI chrome. Tests: Vitest, Testing Library, MSW, Playwright.
-- **Structure:** `lib/api.ts` is the only code that touches `fetch`; `lib/queries.ts` owns caching; `lib/filter.ts` holds pure filter / sort / group functions (unit tested); components are `Filters`, `SportSection`, `LeagueCard`, `LeagueThumb`, `BadgePanel`, `BadgeViewer`, `SportIcon`.
+- **Structure:** `lib/api.ts` is the only code that touches `fetch`; `lib/queries.ts` owns caching; `lib/filter.ts` holds pure filter / sort / group functions (unit tested); `store/ui.ts` is the UI state. `App` only derives what to show and composes `PageHeader`, `Toolbar` (with `Filters`), `LeagueList` (with `SportSection` and `LeagueCard`), and `BadgeAside` / `BadgeSheet` (both wrap `BadgePanel`, which uses `SeasonPicker` and `BadgeViewer`).
 - **Null-safe API handling:** `strBadge: null` seasons are dropped, `seasons: null` (unknown league) shows an empty state.
 - **Motion:** entrance stagger, layout animation when filters reshuffle the list, blur-in badges, spring season pill, view-transition badge view. Motion features, each sport's icon, and the badge panel / mobile sheet are code-split, so the entry chunk is ~340 kB (110 kB gzipped).
 

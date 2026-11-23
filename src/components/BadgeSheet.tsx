@@ -3,7 +3,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '
 import { BadgePanel } from './BadgePanel'
 
 /** Phone/tablet presentation of the badge panel: a bottom sheet. */
-export function BadgeSheet({ league, onClose }: { league: League | undefined; onClose: () => void }) {
+export function BadgeSheet({ league, onClose }: { league: League | null; onClose: () => void }) {
   return (
     <Sheet open={!!league} onOpenChange={(open) => !open && onClose()}>
       <SheetContent side="bottom" className="max-h-[90svh] overflow-y-auto p-5">
