@@ -4,19 +4,13 @@ import { useEffect, useRef } from 'react'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { ALL_SPORTS, type SortKey, type SportOption } from '@/lib/filter'
+import { useUiStore } from '@/store/ui'
 import { cn } from '@/lib/utils'
 import { SportIcon } from './SportIcon'
 
 interface Props {
-  query: string
-  onQueryChange: (q: string) => void
-  sport: string
   sports: SportOption[]
   total: number
-  onSportChange: (s: string) => void
-  sort: SortKey
-  onSortChange: (s: SortKey) => void
-  onReset: () => void
 }
 
 const SORTS = [
@@ -40,7 +34,14 @@ function SportLabel({ sport, count, compact }: { sport: string; count: number; c
   )
 }
 
-export function Filters({ query, onQueryChange, sport, sports, total, onSportChange, sort, onSortChange, onReset }: Props) {
+export function Filters({ sports, total }: Props) {
+  const query = useUiStore((s) => s.query)
+  const sport = useUiStore((s) => s.sport)
+  const sort = useUiStore((s) => s.sort)
+  const setQuery = useUiStore((s) => s.setQuery)
+  const setSport = useUiStore((s) => s.setSport)
+  const setSort = useUiStore((s) => s.setSort)
+  const reset = useUiStore((s) => s.reset)
   const inputRef = useRef<HTMLInputElement>(null)
   // Per the brief: only offer the sport filter when the response contains several sports.
   const showSport = sports.length > 1
@@ -66,7 +67,7 @@ export function Filters({ query, onQueryChange, sport, sports, total, onSportCha
           ref={inputRef}
           type="search"
           value={query}
-          onChange={(e) => onQueryChange(e.target.value)}
+          onChange={(e) => setQuery(e.target.value)}
           placeholder="Search leagues…"
           aria-label="Search leagues by name"
           className={cn(control, 'pr-11 pl-10 text-base [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-cancel-button]:appearance-none')}
@@ -77,7 +78,7 @@ export function Filters({ query, onQueryChange, sport, sports, total, onSportCha
             <m.button
               key="reset"
               type="button"
-              onClick={onReset}
+              onClick={reset}
               aria-label="Reset filters"
               title="Reset filters"
               initial={{ opacity: 0, scale: 0.7 }}
@@ -105,7 +106,7 @@ export function Filters({ query, onQueryChange, sport, sports, total, onSportCha
       {showSport && (
         <Select
           value={sport}
-          onValueChange={(v) => onSportChange(v ?? ALL_SPORTS)}
+          onValueChange={(v) => setSport(v ?? ALL_SPORTS)}
           items={[{ value: ALL_SPORTS, label: 'All sports' }, ...sports.map((o) => ({ value: o.sport, label: o.sport }))]}
         >
           <SelectTrigger
@@ -127,7 +128,7 @@ export function Filters({ query, onQueryChange, sport, sports, total, onSportCha
 
       <Select
         value={sort}
-        onValueChange={(v) => onSortChange((v ?? 'default') as SortKey)}
+        onValueChange={(v) => setSort((v ?? 'default') as SortKey)}
         items={SORTS.map((s) => ({ value: s.key, label: s.label }))}
       >
         <SelectTrigger className={cn(control, iconOnly, 'px-3.5 sm:w-36', sort !== 'default' && active)} aria-label="Sort leagues" title="Sort leagues">

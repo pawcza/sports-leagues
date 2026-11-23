@@ -2,6 +2,8 @@
  * Demo mode (`?mock=1`, or the toggle in the header): adds leagues from other sports. The free API key only
  * returns Soccer, so this is the only way to see the sport dropdown and a list with several categories.
  */
+export const isDemoLeagueId = (id: string) => MOCK_LEAGUES.some((l) => l.idLeague === id)
+
 export const isMockId = (id: string) => id.startsWith('mock-')
 
 const L = (idLeague: string, strLeague: string, strSport: string) => ({ idLeague, strLeague, strSport })

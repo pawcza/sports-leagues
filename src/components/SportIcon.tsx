@@ -1,5 +1,5 @@
 import type { Icon } from '@phosphor-icons/react'
-import { lazy, Suspense, type LazyExoticComponent } from 'react'
+import { lazy, Suspense } from 'react'
 
 // Every Phosphor icon module carries all six weights, so icons are loaded per sport on demand:
 // with the free API key (Soccer only) a single icon is ever downloaded.
@@ -54,20 +54,11 @@ const SPORT_ICON: Record<string, string> = {
   'Equestrian': 'Horse',
 }
 
-const cache = new Map<string, LazyExoticComponent<Icon>>()
-
-function iconFor(sport: string) {
-  const name = SPORT_ICON[sport] ?? 'Trophy'
-  let component = cache.get(name)
-  if (!component) {
-    component = lazy(LOADERS[name])
-    cache.set(name, component)
-  }
-  return component
-}
+// Created once at module level: `lazy` only downloads an icon when it is first rendered.
+const COMPONENTS = Object.fromEntries(Object.entries(LOADERS).map(([name, load]) => [name, lazy(load)]))
 
 export function SportIcon({ sport, className }: { sport: string; className?: string }) {
-  const Component = iconFor(sport)
+  const Component = COMPONENTS[SPORT_ICON[sport] ?? 'Trophy']
   return (
     <Suspense fallback={<span className={className} />}>
       <Component weight="duotone" className={className} aria-hidden />

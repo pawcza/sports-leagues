@@ -1,7 +1,7 @@
 import { QueryClientProvider } from '@tanstack/react-query'
 import { AlertCircle, RotateCw, SearchX } from 'lucide-react'
 import { LazyMotion, m, MotionConfig } from 'motion/react'
-import { lazy, Suspense, useDeferredValue, useMemo, useState } from 'react'
+import { lazy, Suspense, useDeferredValue, useMemo } from 'react'
 import { DemoToggle } from '@/components/DemoToggle'
 import { Filters } from '@/components/Filters'
 import { SportSection } from '@/components/SportSection'
@@ -9,50 +9,39 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { useStuck } from '@/hooks/useStuck'
-import { useUrlState } from '@/hooks/useUrlState'
-import { ALL_SPORTS, filterLeagues, groupBySport, sortLeagues, sportOptions, type SortKey } from '@/lib/filter'
+import { filterLeagues, groupBySport, sortLeagues, sportOptions } from '@/lib/filter'
 import { ease, rise } from '@/lib/motion'
 import { queryClient, useLeagues } from '@/lib/queries'
 import { cn } from '@/lib/utils'
+import { useUiStore } from '@/store/ui'
 
 // Not needed for the first paint: loaded as separate chunks.
 const BadgePanel = lazy(() => import('@/components/BadgePanel').then((m) => ({ default: m.BadgePanel })))
 const BadgeSheet = lazy(() => import('@/components/BadgeSheet').then((m) => ({ default: m.BadgeSheet })))
 
-const URL_KEYS = ['q', 'sport', 'sort', 'league', 'mock'] as const
-
 function Leagues() {
-  const [url, setUrl] = useUrlState(URL_KEYS)
-  const demo = url.mock === '1'
+  const demo = useUiStore((s) => s.demo)
+  const setDemo = useUiStore((s) => s.setDemo)
+  const select = useUiStore((s) => s.select)
   const { data: leagues, isPending, isError, refetch, isFetching } = useLeagues(demo)
   const [sentinel, stuck] = useStuck()
   const isDesktop = useMediaQuery('(min-width: 1024px)')
 
-  const query = useDeferredValue(url.q)
-  const sport = url.sport || ALL_SPORTS
-  const sort: SortKey = url.sort === 'az' || url.sort === 'za' ? url.sort : 'default'
+  const query = useDeferredValue(useUiStore((s) => s.query))
+  const sport = useUiStore((s) => s.sport)
+  const sort = useUiStore((s) => s.sort)
   const sports = useMemo(() => sportOptions(leagues ?? []), [leagues])
   const visible = useMemo(
     () => sortLeagues(filterLeagues(leagues ?? [], query, sport), sort),
     [leagues, query, sport, sort],
   )
-  // On desktop the side panel always has something to show: the first league until one is picked.
   const groups = useMemo(() => groupBySport(visible), [visible])
-  // Desktop starts with the first visible league open until the user has picked (or lost) a selection of their own.
-  const [autoPick, setAutoPick] = useState(true)
-  const candidate = url.league || (autoPick && isDesktop ? (groups[0]?.leagues[0]?.id ?? '') : '')
-  const selectedId = visible.some((l) => l.id === candidate) ? candidate : ''
 
-  // Changing the search or sport filter clears a selection that the new filter would hide.
-  const applyFilter = (patch: { q?: string; sport?: string }) => {
-    const q = patch.q ?? url.q
-    const next = patch.sport ?? url.sport
-    const hidesPick =
-      !!url.league && !filterLeagues(leagues ?? [], q, next || ALL_SPORTS).some((l) => l.id === url.league)
-    if (hidesPick) setAutoPick(false)
-    setUrl({ ...patch, ...(hidesPick ? { league: '' } : {}) })
-  }
-  const selected = leagues?.find((l) => l.id === selectedId)
+  // The user's pick, or on desktop the first visible league until they have picked (or lost) a selection.
+  const picked = useUiStore((s) => s.selected)
+  const autoPick = useUiStore((s) => s.autoPick)
+  const selected = picked ?? (autoPick && isDesktop ? (groups[0]?.leagues[0] ?? null) : null)
+  const selectedId = selected?.id ?? ''
 
   return (
     <div className="flex min-h-svh flex-col">
@@ -66,7 +55,7 @@ function Leagues() {
             </span>
             Live data · TheSportsDB
           </div>
-          <DemoToggle on={demo} onChange={(on) => setUrl({ mock: on ? '1' : '' })} />
+          <DemoToggle on={demo} onChange={setDemo} />
         </div>
         <h1 className="text-3xl font-bold tracking-tight sm:text-6xl">
           Find your{' '}
@@ -90,17 +79,7 @@ function Leagues() {
         )}
       >
         <div className="mx-auto w-full max-w-6xl px-4 py-3 sm:px-6 sm:py-2.5">
-        <Filters
-          query={url.q}
-          onQueryChange={(q) => applyFilter({ q })}
-          sport={sport}
-          sports={sports}
-          total={leagues?.length ?? 0}
-          sort={sort}
-          onSortChange={(s) => setUrl({ sort: s === 'default' ? '' : s })}
-          onReset={() => setUrl({ q: '', sport: '', sort: '' })}
-          onSportChange={(s) => applyFilter({ sport: s === ALL_SPORTS ? '' : s })}
-        />
+        <Filters sports={sports} total={leagues?.length ?? 0} />
         </div>
       </m.div>
 
@@ -145,7 +124,6 @@ function Leagues() {
                       sport={g.sport}
                       leagues={g.leagues}
                       selectedId={selectedId}
-                      onSelect={(id) => setUrl({ league: id })}
                     />
                   ))}
                 </div>
@@ -178,7 +156,7 @@ function Leagues() {
 
       {!isDesktop && (
         <Suspense fallback={null}>
-          <BadgeSheet league={selected} onClose={() => setUrl({ league: '' })} />
+          <BadgeSheet league={selected ?? undefined} onClose={() => select(null)} />
         </Suspense>
       )}
 

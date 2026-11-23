@@ -4,6 +4,7 @@ import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 import App from './App'
 import { queryClient } from './lib/queries'
+import { useUiStore } from './store/ui'
 
 const SOCCER = [
   { idLeague: '4328', strLeague: 'English Premier League', strSport: 'Soccer' },
@@ -43,7 +44,7 @@ afterEach(() => {
   queryClient.clear()
   badgeCalls = []
   leaguesPayload = { leagues: SOCCER }
-  window.history.replaceState(null, '', '/')
+  useUiStore.setState(useUiStore.getInitialState(), true)
 })
 afterAll(() => server.close())
 
@@ -150,7 +151,6 @@ describe('App', () => {
     await user.click(toggle)
     expect(await screen.findByRole('button', { name: /^nba$/i })).toBeInTheDocument()
     expect(screen.getByLabelText('Filter by sport')).toBeInTheDocument()
-    expect(window.location.search).toContain('mock=1')
     await user.click(toggle)
     await waitFor(() => expect(screen.queryByRole('button', { name: /^nba$/i })).not.toBeInTheDocument())
   })

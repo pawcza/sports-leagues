@@ -6,16 +6,17 @@ import type { League } from '@/lib/api'
 import { ease } from '@/lib/motion'
 import { badgesQuery, useBadges } from '@/lib/queries'
 import { cn } from '@/lib/utils'
+import { useUiStore } from '@/store/ui'
 import { LeagueThumb } from './LeagueThumb'
 
 interface Props {
   league: League
   selected: boolean
   index: number
-  onSelect: (id: string) => void
 }
 
-export function LeagueCard({ league, selected, index, onSelect }: Props) {
+export function LeagueCard({ league, selected, index }: Props) {
+  const select = useUiStore((s) => s.select)
   const qc = useQueryClient()
   const ref = useRef<HTMLLIElement>(null)
   // Only league cards that have scrolled near the viewport fetch their badge: the free API is rate-limited.
@@ -46,7 +47,7 @@ export function LeagueCard({ league, selected, index, onSelect }: Props) {
     >
       <button
         type="button"
-        onClick={() => onSelect(league.id)}
+        onClick={() => select(league)}
         onPointerEnter={prefetch}
         onPointerLeave={cancel}
         onFocus={prefetch}

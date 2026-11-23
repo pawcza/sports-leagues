@@ -10,13 +10,12 @@ interface Props {
   sport: string
   leagues: League[]
   selectedId: string
-  onSelect: (id: string) => void
 }
 
 /** Height of the sticky toolbar above (px): section headers dock right under it. */
 export const TOOLBAR_HEIGHT = 70
 
-export function SportSection({ sport, leagues, selectedId, onSelect }: Props) {
+export function SportSection({ sport, leagues, selectedId }: Props) {
   const [sentinel, stuck] = useStuck(TOOLBAR_HEIGHT)
   const headingId = `sport-${sport.replace(/\W+/g, '-')}`
 
@@ -54,7 +53,7 @@ export function SportSection({ sport, leagues, selectedId, onSelect }: Props) {
       <ul className="mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-2 sm:gap-3 xl:grid-cols-3">
         <AnimatePresence mode="popLayout">
           {leagues.map((l, i) => (
-            <LeagueCard key={l.id} league={l} index={i} selected={l.id === selectedId} onSelect={onSelect} />
+            <LeagueCard key={l.id} league={l} index={i} selected={l.id === selectedId} />
           ))}
         </AnimatePresence>
       </ul>
