@@ -4,6 +4,7 @@ import path from 'node:path'
 import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
+  base: './', // relative asset URLs, so the build works from any path (GitHub Pages serves it under /<repo>/)
   plugins: [react(), tailwindcss()],
   resolve: { alias: { '@': path.resolve(import.meta.dirname, 'src') } },
   test: {
