@@ -22,7 +22,7 @@ The brief's `123` test key is capped, and that shapes what you can see:
 
 Two ways to see the full UI anyway:
 
-- **Demo mode:** open `/?mock` (there is a link in the footer). It adds leagues from four more sports (a visible *Demo data* badge is shown; leave with its ✕). Demo leagues have no real badges and cost no API requests.
+- **Demo data toggle:** the switch in the header (or `/?mock=1`) adds leagues from four more sports, so you can see the sport dropdown and several categories. Demo leagues have no real badges and cost no API requests.
 - **Premium key:** copy `.env.example` to `.env` and set `VITE_SPORTSDB_KEY`. All leagues, sports and seasons then come from the real API (no code change). Leagues with more than 12 seasons get a season filter.
 
 ## What it does
@@ -36,7 +36,8 @@ Two ways to see the full UI anyway:
 
 All responses are cached with TanStack Query and persisted to `localStorage` (24 h, per API key), so a reload costs zero requests while the cache is fresh.
 
-- Leagues: one request on first load (4 h `staleTime`, mirroring the API's own `cache-control`).
+- Leagues: one request on first load (4 h `staleTime`, mirroring the API's own `cache-control`). In `pnpm dev` StrictMode fires it twice; a production build does not.
+- Cold first load with the free key is therefore **11 requests**: 1 for the list plus 10 badge lookups, one per league card, to draw each card's thumbnail. After that everything comes from the cache.
 - Badges, **one request per league, at most once**: fetched when that league's card scrolls near the viewport (to draw its thumbnail), when you hover or focus a card for 250 ms (prefetch), or when you click it. Clicking therefore usually *hits the cache* instead of the network; the Season Badge API is still called with the league id, just earlier.
 - Concurrent requests for the same key are de-duplicated.
 
@@ -46,7 +47,7 @@ All responses are cached with TanStack Query and persisted to `localStorage` (24
 - **Structure:** `lib/api.ts` is the only code that touches `fetch`; `lib/queries.ts` owns caching; `lib/filter.ts` holds pure filter / sort / group functions (unit tested); components are `Filters`, `SportSection`, `LeagueCard`, `LeagueThumb`, `BadgePanel`, `BadgeViewer`, `SportIcon`.
 - **Null-safe API handling:** `strBadge: null` seasons are dropped, `seasons: null` (unknown league) shows an empty state.
 - **Selection follows the filters:** a selected league that the current search or sport filter hides is cleared rather than left open.
-- **Motion:** entrance stagger, layout animation when filters reshuffle the list, blur-in badges, spring season pill, view-transition badge view. Motion features are lazy-loaded.
+- **Motion:** entrance stagger, layout animation when filters reshuffle the list, blur-in badges, spring season pill, view-transition badge view. Motion features, each sport's icon, and the badge panel / mobile sheet are code-split, so the entry chunk is ~340 kB (110 kB gzipped).
 
 ## Not done
 
